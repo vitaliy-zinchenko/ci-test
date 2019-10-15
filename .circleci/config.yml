@@ -35,6 +35,19 @@ jobs:
           command: |
             echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
             docker push $IMAGE_NAME:latest
+
+  test1:
+    executor: docker-publisher
+    steps:
+      - run:
+          name: Test 1
+          command: echo "test1"
+  test2:
+    executor: docker-publisher
+    steps:
+      - run:
+          name: Test 2
+          command: echo "test2"
 workflows:
   version: 2
   build-master:
@@ -48,6 +61,21 @@ workflows:
           context: docker-hub
           requires:
             - build
+          filters:
+            branches:
+              only: master
+
+      - test1:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - test2:
+          requires:
+            - build
+            - publish-latest
+            - test1
           filters:
             branches:
               only: master
